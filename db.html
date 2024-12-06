@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Queries</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        pre {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-x: auto;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        code {
+            font-family: Consolas, monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>SQL Queries</h1>
+
+    <h2>1. Accounts Table</h2>
+    <pre><code>
+CREATE TABLE Accounts (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50),
+    password VARCHAR(50),
+    email VARCHAR(100),
+    created_at DATE,
+    last_login TIME
+);
+
+INSERT INTO Accounts (username, password, email, created_at, last_login)
+VALUES
+    ('user1', 'pass123', 'user1@example.com', '2023-11-01', '14:00:00'),
+    ('user2', 'pass456', 'user2@example.com', '2023-11-02', '14:30:00'),
+    ('user3', 'pass789', 'user3@example.com', '2023-11-03', '15:00:00'),
+    ('user4', 'pass111', 'user4@example.com', '2023-11-04', '15:30:00'),
+    ('user5', 'pass222', 'user5@example.com', '2023-11-05', '16:00:00');
+
+SELECT * FROM Accounts;
+    </code></pre>
+
+    <h2>2. Inner Join on Customer and Payment Tables</h2>
+    <pre><code>
+SELECT 
+    customer.customer_id, 
+    customer.first_name, 
+    customer.last_name
+FROM 
+    customer
+INNER JOIN 
+    payment 
+ON 
+    customer.customer_id = payment.customer_id;
+    </code></pre>
+
+    <h2>3. Self Join on Film Table for Similar Lengths</h2>
+    <pre><code>
+SELECT 
+    f1.title AS film_title_1, 
+    f2.title AS film_title_2
+FROM 
+    film f1
+INNER JOIN 
+    film f2 
+ON 
+    f1.length = f2.length 
+WHERE 
+    f1.film_id <> f2.film_id;
+    </code></pre>
+
+    <h2>4. Create and Operate on Sales Table</h2>
+    <h3>a. Create Sales Table and Insert Data</h3>
+    <pre><code>
+CREATE TABLE Sales (
+    brand VARCHAR(50),
+    segment VARCHAR(50),
+    quantity INT
+);
+
+INSERT INTO Sales (brand, segment, quantity)
+VALUES
+    ('BrandA', 'Segment1', 100),
+    ('BrandA', 'Segment2', 150),
+    ('BrandB', 'Segment1', 200),
+    ('BrandB', 'Segment3', 250),
+    ('BrandC', 'Segment2', 300);
+    </code></pre>
+    <h3>b. Group by Brand and Segment</h3>
+    <pre><code>
+SELECT brand, segment, SUM(quantity) AS total_quantity
+FROM Sales
+GROUP BY brand, segment;
+    </code></pre>
+
+    <h3>c. Group by Brand</h3>
+    <pre><code>
+SELECT brand, SUM(quantity) AS total_quantity
+FROM Sales
+GROUP BY brand;
+    </code></pre>
+
+    <h3>d. Group by Segment</h3>
+    <pre><code>
+SELECT segment, SUM(quantity) AS total_quantity
+FROM Sales
+GROUP BY segment;
+    </code></pre>
+
+    <h3>e. Union All</h3>
+    <pre><code>
+SELECT brand, segment, SUM(quantity) AS total_quantity 
+FROM Sales 
+GROUP BY brand, segment
+UNION ALL
+SELECT brand, NULL, SUM(quantity) 
+FROM Sales 
+GROUP BY brand
+UNION ALL
+SELECT NULL, segment, SUM(quantity) 
+FROM Sales 
+GROUP BY segment
+UNION ALL
+SELECT NULL, NULL, SUM(quantity) 
+FROM Sales;
+    </code></pre>
+
+    <h3>f. Grouping Sets</h3>
+    <pre><code>
+SELECT brand, segment, SUM(quantity) AS total_quantity
+FROM Sales
+GROUP BY GROUPING SETS (
+    (brand, segment),
+    (brand),
+    (segment),
+    ()
+);
+    </code></pre>
+
+    <h3>g. Rollup</h3>
+    <pre><code>
+SELECT brand, segment, SUM(quantity) AS total_quantity
+FROM Sales
+GROUP BY ROLLUP (brand, segment);
+    </code></pre>
+
+    <h3>h. Cube</h3>
+    <pre><code>
+SELECT brand, segment, SUM(quantity) AS total_quantity
+FROM Sales
+GROUP BY CUBE (brand, segment);
+    </code></pre>
+
+    <h2>5. Create and Update Courses Table</h2>
+    <h3>a. Create Courses Table and Insert Data</h3>
+    <pre><code>
+CREATE TABLE Courses (
+    course_id SERIAL PRIMARY KEY,
+    course_name VARCHAR(100),
+    price NUMERIC(10, 2),
+    description TEXT,
+    published_date DATE
+);
+
+INSERT INTO Courses (course_name, price, description, published_date)
+VALUES
+    ('Course1', 500.00, 'Description 1', '2023-01-01'),
+    ('Course2', 600.00, 'Description 2', '2023-02-01'),
+    ('Course3', 700.00, 'Description 3', '2023-03-01'),
+    ('Course4', 800.00, 'Description 4', '2023-04-01'),
+    ('Course5', 900.00, 'Description 5', '2023-05-01');
+    </code></pre>
+
+    <h3>b. Update published_date</h3>
+    <pre><code>
+UPDATE Courses
+SET published_date = '2020-07-01'
+WHERE course_id = 2;
+    </code></pre>
+
+    <h3>c. Update price for course_id = 4</h3>
+    <pre><code>
+UPDATE Courses
+SET price = price * 1.85
+WHERE course_id = 4;
+    </code></pre>
+
+    <h2>6. Block to Count Films</h2>
+    <pre><code>
+DO $$
+DECLARE
+    film_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO film_count FROM film;
+    RAISE NOTICE 'The number of films is %', film_count;
+END $$;
+    </code></pre>
+
+    <h2>7. Block to Print Actor Names</h2>
+    <pre><code>
+DO $$
+DECLARE
+    v_first_name TEXT;
+    v_last_name TEXT;
+BEGIN
+    SELECT first_name, last_name INTO v_first_name, v_last_name
+    FROM actor
+    WHERE actor_id = 4;
+
+    RAISE NOTICE 'First Name: %, Last Name: %', v_first_name, v_last_name;
+END $$;
+    </code></pre>
+
+    <h2>8. Function to Count Films by Length Range</h2>
+    <pre><code>
+CREATE OR REPLACE FUNCTION get_film_count(len_from INT, len_to INT)
+RETURNS INT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    film_count INT;
+BEGIN
+    SELECT COUNT(*) INTO film_count
+    FROM film
+    WHERE length BETWEEN len_from AND len_to;
+
+    RETURN film_count;
+END $$;
+
+-- Execute the function
+SELECT get_film_count(90, 120);
+    </code></pre>
+
+</body>
+</html>
